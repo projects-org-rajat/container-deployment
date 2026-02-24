@@ -1,0 +1,91 @@
+name: Build and Deploy to Elastic Beanstalk
+
+on:
+  push:
+    paths:
+      - 'app/**'
+      - 'Dockerrun.aws.json'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Login to ECR
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin \
+          $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+        env:
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      # Build image
+      - name: Build Docker Image
+        run: docker build -t app ./app
+
+      # Tag image
+      - name: Tag Image
+        run: |
+          docker tag app:latest \
+          $ECR_REPO_URL:latest
+        env:
+          ECR_REPO_URL: ${{ secrets.ECR_REPO_URL }}
+
+      # Push image
+      - name: Push Image
+        run: docker push $ECR_REPO_URL:latest
+        env:
+          ECR_REPO_URL: ${{ secrets.ECR_REPO_URL }}
+
+      # Create Dockerrun file dynamically
+      - name: Create Dockerrun file
+        run: |
+          cat <<EOF > Dockerrun.aws.json
+          {
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "${{ secrets.ECR_REPO_URL }}:latest",
+              "Update": "true"
+            },
+            "Ports": [
+              { "ContainerPort": 80 }
+            ]
+          }
+          EOF
+
+      # Zip deployment
+      - name: Zip deployment
+        run: zip deploy.zip Dockerrun.aws.json
+
+      # Upload to S3
+      - name: Upload to S3
+        run: |
+          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET }}/deploy.zip
+
+      # Create EB version
+      - name: Create EB version
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name ${{ secrets.EB_APP_NAME }} \
+            --version-label v-${{ github.run_number }} \
+            --source-bundle S3Bucket=${{ secrets.S3_BUCKET }},S3Key=deploy.zip
+
+      # Deploy to environment
+      - name: Deploy EB version
+        run: |
+          aws elasticbeanstalk update-environment \
+            --environment-name ${{ secrets.EB_ENV_NAME }} \
+            --version-label v-${{ github.run_number }}
