@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>About This Project</h2>
+    <p>This website demonstrates a full DevOps pipeline.</p>
+
+    <h3>Pipeline Flow:</h3>
+    <ol>
+        <li>Developer pushes code to GitHub</li>
+        <li>GitHub Actions builds Docker image</li>
+        <li>Image pushed to Amazon ECR</li>
+        <li>Elastic Beanstalk pulls new image</li>
+        <li>Website updates automatically</li>
+    </ol>
+</div>
+{% endblock %}

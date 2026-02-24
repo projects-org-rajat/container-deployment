@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Welcome to the DevOps Demo App</h2>
+    <p>This application is deployed using:</p>
+
+    <ul>
+        <li>🐳 Docker Container</li>
+        <li>☁ AWS Elastic Beanstalk</li>
+        <li>📦 Terraform Infrastructure</li>
+        <li>⚙ GitHub Actions CI/CD</li>
+    </ul>
+
+    <div class="info">
+        <p><b>Hostname:</b> {{ hostname }}</p>
+        <p><b>Server Time:</b> {{ time }}</p>
+        <p><b>Version:</b> {{ version }}</p>
+    </div>
+</div>
+{% endblock %}
