@@ -24,7 +24,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Login to ECR
       - name: Login to ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION \
@@ -34,23 +33,21 @@ jobs:
           ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      # Build image
       - name: Build Docker Image
         run: docker build -t app ./app
 
-      # Tag image
       - name: Tag image
         run: docker tag app:latest $ECR_REPO_URL:latest
         env:
           ECR_REPO_URL: ${{ secrets.ECR_REPO_URL }}
 
-      # Push image
+      
       - name: Push image to ECR
         run: docker push $ECR_REPO_URL:latest
         env:
           ECR_REPO_URL: ${{ secrets.ECR_REPO_URL }}
 
-      # Create Dockerrun dynamically
+      
       - name: Create Dockerrun file
         run: |
           cat <<EOF > Dockerrun.aws.json
@@ -66,16 +63,14 @@ jobs:
           }
           EOF
 
-      # Zip deployment package
       - name: Zip deployment
         run: zip deploy.zip Dockerrun.aws.json
 
-      # Upload to S3
       - name: Upload to S3
         run: |
           aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET }}/deploy.zip
 
-      # Create EB application version
+      
       - name: Create EB version
         run: |
           aws elasticbeanstalk create-application-version \
@@ -83,7 +78,7 @@ jobs:
             --version-label v-${{ github.run_number }} \
             --source-bundle S3Bucket=${{ secrets.S3_BUCKET }},S3Key=deploy.zip
 
-      # Deploy to environment
+      
       - name: Deploy to EB
         run: |
           aws elasticbeanstalk update-environment \
