@@ -13,7 +13,6 @@ jobs:
   terraform-plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
-    environment: infra
 
     defaults:
       run:

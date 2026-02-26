@@ -1,3 +1,4 @@
 output "igw_id" {
-  value = aws_internet_gateway.igw.id
+  description = "Internet Gateway ID"
+  value       = aws_internet_gateway.this.id
 }

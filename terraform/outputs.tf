@@ -1,3 +1,5 @@
+
+/*
 output "ecr_url" {
   value = module.ecr.repository_url
 }
@@ -13,3 +15,4 @@ output "beanstalk_app" {
 output "beanstalk_env" {
   value = module.beanstalk.env_name
 }
+*/

@@ -1,6 +1,8 @@
 output "subnet_ids" {
-  value = [
-    aws_subnet.public1.id,
-    aws_subnet.public2.id
-  ]
+  description = "Created subnet IDs"
+  value       = values(aws_subnet.this)[*].id
+}
+
+output "subnets" {
+  value = aws_subnet.this
 }

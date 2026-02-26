@@ -1,5 +1,9 @@
-variable "subnet_ids" {
-  type = list(string)
-}
 
-variable "route_table_id" {}
+variable "route_table_id" {
+  description = "Route table ID"
+  type        = string
+}
+variable "subnets" {
+  description = "Subnet map"
+  type        = any
+}

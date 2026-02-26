@@ -37,13 +37,17 @@ jobs:
         run: docker build -t app ./app
 
       - name: Tag image
-        run: docker tag app:latest $ECR_REPO_URL:latest
+        run: |
+          docker tag app:latest $ECR_REPO_URL:latest
+          docker tag app:latest $ECR_REPO_URL:v-${{ github.run_number }}
         env:
           ECR_REPO_URL: ${{ secrets.ECR_REPO_URL }}
 
       
       - name: Push image to ECR
-        run: docker push $ECR_REPO_URL:latest
+        run: |
+          docker push $ECR_REPO_URL:latest
+          docker push $ECR_REPO_URL:v-${{ github.run_number }}
         env:
           ECR_REPO_URL: ${{ secrets.ECR_REPO_URL }}
 
@@ -54,7 +58,7 @@ jobs:
           {
             "AWSEBDockerrunVersion": "1",
             "Image": {
-              "Name": "${{ secrets.ECR_REPO_URL }}:latest",
+              "Name": "${{ secrets.ECR_REPO_URL }}:v-${{ github.run_number }}",
               "Update": "true"
             },
             "Ports": [
