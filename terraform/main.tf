@@ -29,12 +29,7 @@ module "routetable" {
   source   = "./modules/routetable"
   vpc_id = module.vpc.vpc_id
 
-  routes = [
-    {
-      cidr_block = "0.0.0.0/0"
-      gateway_id = module.igw.igw_id
-    }
-  ]
+  routes = local.routes
 
   tags = var.tags
 }

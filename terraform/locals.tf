@@ -29,4 +29,12 @@ locals {
       }
     ]
   )
+
+
+routes = [
+    {
+      cidr_block = "0.0.0.0/0"
+      gateway_id = module.igw.igw_id
+    }
+  ]
 }
