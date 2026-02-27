@@ -46,7 +46,7 @@ jobs:
       
       - name: Push image to ECR
         run: |
-          docker push $ECR_REPO_URL:latest
+          
           docker push $ECR_REPO_URL:v-${{ github.run_number }}
         env:
           ECR_REPO_URL: ${{ secrets.ECR_REPO_URL }}
