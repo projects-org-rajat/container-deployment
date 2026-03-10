@@ -1,9 +1,9 @@
-
-variable "route_table_id" {
-  description = "Route table ID"
+variable "subnet_id" {
+  description = "Subnet to associate"
   type        = string
 }
-variable "subnets" {
-  description = "Subnet map"
-  type        = any
+
+variable "route_table_id" {
+  description = "Route table to attach"
+  type        = string
 }

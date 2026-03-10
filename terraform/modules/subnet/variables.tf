@@ -1,20 +1,9 @@
-variable "vpc_id" {
-  description = "VPC where subnets will be created"
-  type        = string
-}
-
-variable "subnets" {
-  description = "Map of subnet configurations"
-
-  type = map(object({
-    cidr_block        = string
-    availability_zone = string
-    public            = bool
-  }))
-}
-
-variable "tags" {
-  description = "Common resource tags"
-  type        = map(string)
-  default     = {}
+variable "name" {}
+variable "cidr_block" {}
+variable "availability_zone" {}
+variable "vpc_id" {}
+variable "public_ip" {
+    default = true  
+    type = bool
+  
 }

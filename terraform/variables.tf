@@ -1,101 +1,122 @@
-variable "vpc_cidr" {
-  description = "CIDR block for VPC"
+#------provider_region---------
+variable "region" {
+  default     = "ap-south-1"
+  description = "AWS deployment region"
   type        = string
 }
 
-variable "enable_dns_hostnames" {
-  description = "Enable DNS hostnames"
-  type        = bool
-  default     = true
-}
-
-variable "tags" {
-  description = "Tags for VPC"
-  type        = map(string)
+#------vpc_variable----------
+variable "vpcs" {
+  type = map(object({
+    name       = string
+    cidr_block = string
+  }))
 }
 
 
+#---------subnet_variable-------
 variable "subnets" {
-  description = "Subnet definitions"
+  type = map(object({
+    name       = string
+    cidr_block = string
+    az         = string
+    vpc_key    = string
+    public_ip  = bool
+  }))
+}
+
+#-------s3_bucket_variable--------
+variable "s3_buckets" {
+  description = "Map of S3 buckets"
 
   type = map(object({
-    cidr_block        = string
-    availability_zone = string
-    public            = bool
+    bucket_name = string
+    versioning  = bool
+    environment = string
+    force_destroy = bool
+    tags        = map(string)
   }))
 }
 
-variable "bucket_name" {
-  description = "Deployment bucket name"
-  type        = string
-}
+#--------igw_variable-----------
 
+variable "igws" {
+  description = "Internet gateways"
 
-variable "routes" {
-  description = "Route definitions"
-
-  type = list(object({
-    cidr_block = string
-    gateway_id = optional(string)
-    nat_gateway_id = optional(string)
-  }))
-
-  default = []
-}
-
-variable "repository_name" {
-  description = "ECR repository name"
-  type        = string
-}
-
-variable "beanstalk_settings" {
-  description = "Beanstalk configuration"
-
-  type = list(object({
-    namespace = string
-    name      = string
-    value     = string
+  type = map(object({
+    name    = string
+    vpc_key = string
+    tags    = map(string)
   }))
 }
 
-variable "platform" {
-  description = "Beanstalk platform"
-  type        = string
-  
+variable "ecr_repositories" {
+  description = "Map of ECR repositories"
+
+  type = map(object({
+    repository_name      = string
+    image_tag_mutability = string
+    scan_on_push         = bool
+    force_delete  = bool
+    tags                 = map(string)
+  }))
 }
 
-variable "role_name" {
-  
-}
-#-----------------------------------
+#--------iam_role_variable------------
 
-variable "region" { 
-    default = "ap-south-1" 
-    description = "AWS deployment region"
-    type = string
+variable "iam_roles" {
+  type = map(object({
+    role_name = string
+    service   = string
+    policies  = list(string)
+  }))
 }
-variable "app_name" {
-    description = "name of the app"
-    type = string
-    default = "rajat-devops-app"
+
+#--------route_table_variable--------
+variable "route_tables" {
+  type = map(object({
+    name    = string
+    vpc_key = string
+    igw_key = string
+    tags    = optional(map(string))
+  }))
 }
-variable "env_name" {
-    description = "name of the environment"
-    type = string
-    default = "rajat-devops-env"
+
+#-------subnet_Association_variable------
+variable "route_associations" {
+  type = map(object({
+    subnet_key      = string
+    route_table_key = string
+  }))
 }
-variable "environment" {
-    description = "deployment environment name"
-    default = "prod" 
-    type = string
+
+
+#--------beanstalk----------
+variable "beanstalk_apps" {
+
+  type = map(object({
+    name        = string
+    description = string
+  }))
+
 }
-variable "instance_type" {
-    description = "EC2 instance type"
-    type = string
-    default = "t3.micro" 
-}
-variable "ecr_repo_name" {
-    description = "ECR repository name"
-    type = string
-    default = "rajat-devops-repo" 
+
+variable "beanstalk_envs" {
+
+  type = map(object({
+
+    env_name       = string
+    app_key        = string
+    platform_arn = string
+    vpc_key        = string
+    subnet_keys    = list(string)
+
+    settings = list(object({
+      namespace = string
+      name      = string
+      value     = string
+    }))
+
+  }))
+
 }

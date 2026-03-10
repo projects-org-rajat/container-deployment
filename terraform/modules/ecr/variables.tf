@@ -3,10 +3,6 @@ variable "repository_name" {
   type        = string
 }
 
-variable "environment" {
-  description = "Deployment environment"
-  type        = string
-}
 
 variable "image_tag_mutability" {
   description = "Image tag mutability setting"

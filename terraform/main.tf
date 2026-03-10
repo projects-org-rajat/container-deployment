@@ -1,72 +1,95 @@
 module "vpc" {
-  source   = "./modules/vpc"
-  vpc_cidr = var.vpc_cidr
-  enable_dns_hostnames = var.enable_dns_hostnames
-  tags = var.tags
+  source = "./modules/vpc"
+  for_each = var.vpcs
+
+  name       = each.value.name
+  cidr_block = each.value.cidr_block
 }
 
-module "subnet"{
+module "subnet" {
   source = "./modules/subnet"
+  for_each = var.subnets
 
-  vpc_id  = module.vpc.vpc_id
-  subnets = var.subnets
-  tags    = var.tags
+  name       = each.value.name
+  cidr_block = each.value.cidr_block
+  vpc_id = module.vpc[each.value.vpc_key].vpc_id
+  availability_zone = each.value.az
+  public_ip = each.value.public_ip
 }
-
-
-
 
 module "s3" {
-  source      = "./modules/s3"
-  bucket_name = var.bucket_name
-  environment = var.environment
-  tags        = var.tags
+  source = "./modules/s3"
+  for_each = var.s3_buckets
+
+  bucket_name = each.value.bucket_name
+  force_destroy = each.value.force_destroy
+  versioning  = each.value.versioning
+  environment = each.value.environment
+  tags        = each.value.tags
 }
-
-
-
-module "routetable" {
-  source   = "./modules/routetable"
-  vpc_id = module.vpc.vpc_id
-
-  routes = local.routes
-
-  tags = var.tags
-}
-
 
 module "igw" {
-  source   = "./modules/igw"
-  vpc_id = module.vpc.vpc_id
-  tags   = var.tags
+  source = "./modules/igw"
+  for_each = var.igws
+
+  name = each.value.name
+  vpc_id = module.vpc[each.value.vpc_key].vpc_id
+  tags = each.value.tags
 }
 
-
 module "ecr" {
-  source    = "./modules/ecr"
-  repository_name = var.repository_name
-  environment     = var.environment
-  tags            = var.tags
+  source = "./modules/ecr"
+  for_each = var.ecr_repositories
+
+  repository_name      = each.value.repository_name
+  image_tag_mutability = each.value.image_tag_mutability
+  scan_on_push         = each.value.scan_on_push
+  force_delete = each.value.force_delete
+  tags                 = each.value.tags
 }
 
 module "iam" {
-  source   = "./modules/iam"
-  app_name = var.role_name
+  source = "./modules/iam"
+  for_each = var.iam_roles
+
+  role_name           = each.value.role_name
+  assume_role_service = each.value.service
+  policy_arns         = each.value.policies
+}
+
+module "routetable" {
+  source = "./modules/routetable"
+  for_each = var.route_tables
+
+  name   = each.value.name
+  vpc_id = module.vpc[each.value.vpc_key].vpc_id
+  igw_id = module.igw[each.value.igw_key].igw_id
+
+  tags = lookup(each.value, "tags", {})
+}
+
+module "association" {
+  source = "./modules/association"
+  for_each = var.route_associations
+
+  subnet_id = module.subnet[each.value.subnet_key].subnet_id
+  route_table_id = module.routetable[each.value.route_table_key].route_table_id
 }
 
 module "beanstalk" {
-  source           = "./modules/beanstalk"
-  app_name         = var.app_name
-  env_name         = var.env_name
-  platform         = var.platform
-  instance_profile = module.iam.instance_profile
-  vpc_id           = module.vpc.vpc_id
-  subnet_ids       = module.subnet.subnet_ids
-  settings = local.beanstalk_settings
-  tags             = var.tags
+  source = "./modules/beanstalk"
+  for_each = var.beanstalk_apps
+
+  app_name    = each.value.name
+  description = each.value.description
 }
-module "association" {
-  source          = "./modules/association"
-  subnets = module.subnet.subnets
-  route_table_id  = module.routetable.route_table_id
+
+module "beanstalk_env" {
+  source = "./modules/beanstalk-env"
+  for_each = var.beanstalk_envs
+
+  env_name         = each.value.env_name
+  application_name = module.beanstalk[each.value.app_key].app_name
+  platform_arn = each.value.platform_arn
+  settings = local.beanstalk_settings[each.key]
 }

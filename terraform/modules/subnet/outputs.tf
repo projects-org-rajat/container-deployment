@@ -1,8 +1,11 @@
-output "subnet_ids" {
-  description = "Created subnet IDs"
-  value       = values(aws_subnet.this)[*].id
+output "subnet_id" {
+  value = aws_subnet.this.id
 }
 
-output "subnets" {
-  value = aws_subnet.this
+output "public_subnets" {
+  value = aws_subnet.this.id
+}
+
+output "private_subnets" {
+  value = aws_subnet.this.id
 }

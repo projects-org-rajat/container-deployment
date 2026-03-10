@@ -3,17 +3,15 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "routes" {
-  description = "List of routes"
-
-  type = list(object({
-    cidr_block = string
-    gateway_id = optional(string)
-    nat_gateway_id = optional(string)
-  }))
-
-  default = []
+variable "name" {
+  type = string
 }
+
+variable "igw_id" {
+  type    = string
+  default = null
+}
+
 
 variable "tags" {
   description = "Common resource tags"

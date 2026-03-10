@@ -1,9 +1,9 @@
-resource "aws_elastic_beanstalk_application" "app" {
-  name = var.app_name
-
-  tags = var.tags
+resource "aws_elastic_beanstalk_application" "this" {
+  name        = var.app_name
+  description = var.description
 }
 
+/*
 resource "aws_elastic_beanstalk_environment" "env" {
 
   name                = var.env_name
@@ -21,4 +21,4 @@ resource "aws_elastic_beanstalk_environment" "env" {
   }
 
   tags = var.tags
-}
+}*/

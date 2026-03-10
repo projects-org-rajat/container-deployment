@@ -1,40 +1,50 @@
 locals {
-
-  beanstalk_settings = concat(
-    var.beanstalk_settings,
-
-    [
+  beanstalk_settings = {
+    for k, v in var.beanstalk_envs : k => concat([
+      
+      # VPC configuration
       {
-        namespace = "aws:autoscaling:launchconfiguration"
-        name      = "IamInstanceProfile"
-        value     = module.iam.instance_profile
+        namespace = "aws:ec2:vpc"
+        name      = "VPCId"
+        value     = module.vpc[v.vpc_key].vpc_id
       },
+      {
+        namespace = "aws:ec2:vpc"
+        name      = "Subnets"
+        value     = join(",", [for s in v.subnet_keys : module.subnet[s].subnet_id])
+      },
+      {
+        namespace = "aws:ec2:vpc"
+        name      = "ELBSubnets"
+        value     = join(",", [for s in v.subnet_keys : module.subnet[s].subnet_id])
+      },
+
+      # Instance configuration
       {
         namespace = "aws:autoscaling:launchconfiguration"
         name      = "InstanceType"
         value     = "t3.micro"
       },
-
-
       {
-        namespace = "aws:ec2:vpc"
-        name      = "VPCId"
-        value     = module.vpc.vpc_id
+        namespace = "aws:autoscaling:launchconfiguration"
+        name      = "IamInstanceProfile"
+        value     = module.iam["beanstalk"].instance_profile
       },
 
+      # Environment type
       {
-        namespace = "aws:ec2:vpc"
-        name      = "Subnets"
-        value     = join(",", module.subnet.subnet_ids)
+        namespace = "aws:elasticbeanstalk:environment"
+        name      = "EnvironmentType"
+        value     = "LoadBalanced"
+      },
+
+      # Health check configuration
+      {
+        namespace = "aws:elasticbeanstalk:environment:process:default"
+        name      = "HealthCheckPath"
+        value     = "/"
       }
-    ]
-  )
 
-
-routes = [
-    {
-      cidr_block = "0.0.0.0/0"
-      gateway_id = module.igw.igw_id
-    }
-  ]
+    ], v.settings)
+  }
 }

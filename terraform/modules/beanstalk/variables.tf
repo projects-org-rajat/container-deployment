@@ -1,5 +1,12 @@
-
 variable "app_name" {
+  type = string
+}
+
+variable "description" {
+  type    = string
+  default = ""
+}
+/*variable "app_name" {
   description = "Elastic Beanstalk application name"
   type        = string
 }
@@ -45,4 +52,4 @@ variable "tags" {
   description = "Tags for Beanstalk environment"
   type        = map(string)
   default     = {}
-}
+}*/

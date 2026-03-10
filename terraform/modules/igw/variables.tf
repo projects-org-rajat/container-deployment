@@ -8,3 +8,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "name" {
+  description = "Name tag for IGW"
+  type        = string
+}
